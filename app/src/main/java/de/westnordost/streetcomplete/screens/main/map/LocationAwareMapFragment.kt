@@ -3,6 +3,7 @@ package de.westnordost.streetcomplete.screens.main.map
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.SharedPreferences
 import android.hardware.SensorManager
 import android.location.Location
 import android.os.Bundle
@@ -10,12 +11,12 @@ import android.util.Log
 import android.view.WindowManager
 import androidx.core.content.edit
 import androidx.core.content.getSystemService
+import de.westnordost.streetcomplete.Prefs
 import de.westnordost.streetcomplete.data.osm.mapdata.LatLon
 import de.westnordost.streetcomplete.data.osmtracks.Trackpoint
 import de.westnordost.streetcomplete.screens.main.map.components.CurrentLocationMapComponent
 import de.westnordost.streetcomplete.screens.main.map.components.TracksMapComponent
 import de.westnordost.streetcomplete.screens.main.map.tangram.screenBottomToCenterDistance
-import de.westnordost.streetcomplete.screens.settings.NavigationOrientationUpdater
 import de.westnordost.streetcomplete.util.ktx.hasLocationPermission
 import de.westnordost.streetcomplete.util.ktx.isLocationEnabled
 import de.westnordost.streetcomplete.util.ktx.toLatLon
@@ -36,6 +37,7 @@ import kotlin.math.PI
 open class LocationAwareMapFragment : MapFragment() {
 
     private val locationAvailabilityReceiver: LocationAvailabilityReceiver by inject()
+    private val prefs: SharedPreferences by inject()
 
     private lateinit var compass: Compass
     private lateinit var locationManager: FineLocationManager
@@ -205,12 +207,12 @@ open class LocationAwareMapFragment : MapFragment() {
 
         updateCameraPosition(600) {
             if (isNavigationMode) {
-                val isCompassDirection = NavigationOrientationUpdater.isCompassDirection
+                val navDirection = Prefs.NavigationOrientation.valueOf(prefs.getString(Prefs.ORIENTATION_SELECT, "MOVEMENT_DIRECTION")!!)
                 val bearing1 = getTrackBearing(tracks.last())
                 val bearing2 = locationMapComponent?.rotation // /mn/ trying to track compass
+                val bearing = if (navDirection == Prefs.NavigationOrientation.COMPASS_DIRECTION) bearing2 else bearing1
                 Log.d("centerCurrentPosition", "getTrackBearing is $bearing1 and locationMapComponent.rotation is $bearing2")
-                val bearing = if (isCompassDirection) locationMapComponent?.rotation else getTrackBearing(tracks.last())
-                Log.d("centerCurrentPosition", "isCompassDirection = $isCompassDirection, newbearing=$bearing")
+                Log.d("centerCurrentPosition", "navDirection = $navDirection, new bearing = $bearing")
                 if (bearing != null) {
                     rotation = -(bearing * PI / 180.0).toFloat()
                     /* move center position down a bit, so there is more space in front of than

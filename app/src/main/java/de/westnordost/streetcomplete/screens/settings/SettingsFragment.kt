@@ -57,7 +57,6 @@ class SettingsFragment :
     private val osmQuestController: OsmQuestController by inject()
     private val osmNoteQuestController: OsmNoteQuestController by inject()
     private val resurveyIntervalsUpdater: ResurveyIntervalsUpdater by inject()
-    private val navigationOrientationUpdater: NavigationOrientationUpdater by inject()
     private val questTypeRegistry: QuestTypeRegistry by inject()
     private val visibleQuestTypeSource: VisibleQuestTypeSource by inject()
     private val questPresetsSource: QuestPresetsSource by inject()
@@ -183,9 +182,6 @@ class SettingsFragment :
             Prefs.LANGUAGE_SELECT -> {
                 setDefaultLocales(getSelectedLocales(requireContext()))
                 activity?.let { ActivityCompat.recreate(it) }
-            }
-            Prefs.ORIENTATION_SELECT -> {
-                navigationOrientationUpdater.update()
             }
             Prefs.RESURVEY_INTERVALS -> {
                 resurveyIntervalsUpdater.update()
